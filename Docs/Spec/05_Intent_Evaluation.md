@@ -254,7 +254,7 @@ For `"adaptive"` mode, servers SHOULD use score thresholds derived from their re
 
 If `max_tokens_budget` is provided in the constraints, servers MUST perform **Token Budget Fitting**: sorting tools by relevance score and progressively demoting the lowest-scoring tools (e.g., from `"full"` to `"condensed"`, or `"condensed"` to `"minimal"`) until the estimated total token cost of all tools fits within the budget.
 
-These thresholds and fitting logic are RECOMMENDED defaults. Servers MAY adjust them based on implementation specifics.
+**Configuration Mandate:** The exact score thresholds and token matching heuristics MUST NOT be hardcoded into the protocol. MangleCP is a framework; servers MUST expose these thresholds and limits as configurable parameters, allowing server developers to dictate how much context they want to flood based on their specific LLM/client targets.
 
 ### 5.3 Disclosure Upgrade
 

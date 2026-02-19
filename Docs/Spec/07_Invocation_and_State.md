@@ -248,10 +248,10 @@ The observability section provides human-readable execution summaries and machin
 
 ### 5.3 Observability and Context Window Flooding
 
-Servers MUST design observability output and state deltas to prevent flooding the client's LLM context window:
+Servers MUST design observability output and state deltas to prevent uncontrolled flooding of the client's LLM context window:
 
 - **State Delta Cap:** Servers SHOULD limit the number of specific assertions returned in `state_delta`. If an action touches 1,000 files, the server MUST NOT return 1,000 `file_modified` facts; instead, it SHOULD return a single rolled-up fact (e.g., `bulk_modification_completed`).
-- **Event Trace Cap:** The `events` array SHOULD contain structurally significant milestones, not low-level trace spans. Max 20 events is recommended.
+- **Event Trace Cap:** The `events` array SHOULD contain structurally significant milestones, not low-level trace spans. The maximum number of events MUST be a configurable parameter set by the server developer (e.g., defaulting to 20), rather than a hardcoded protocol limit.
 - **Log Summarization:** The `summary` field MUST be a concise distillation (1-3 sentences) of the execution, not a raw dump of tool outputs.
 
 Servers SHOULD provide enough observability for clients to understand what happened during execution, but MUST NOT expose security-sensitive internal details (credentials, internal URLs, raw database queries). Observability events SHOULD correspond to the atomic actions the macro-tool bundled, giving the client visibility into the execution chain without requiring the client to manage each step individually.
