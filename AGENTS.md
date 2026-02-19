@@ -69,6 +69,16 @@ If a feature requires crossing these boundaries, it belongs in a *client* or *se
 
 ---
 
+## Framework Ideology
+
+MangleCP is a **framework**, not a rigid, one-size-fits-all set of constraints. When writing specifications or implementing servers, adhere to the following principles:
+
+- **Configurability Over Hard Limits** — Protocol specifications MUST NOT hardcode arbitrary limits (e.g., "max 20 events", "max 1000 tokens").
+- **Developer Control** — Server developers decide exactly how much context they want to flood to their specific LLM/client targets. Limits, thresholds for progressive disclosure, and event trace caps MUST be exposed as configurable parameters.
+- **Provide Mechanisms, Not Policies** — MangleCP provides the mechanisms for progressive disclosure and observability caps, but the server implementation defines the exact policy for when and how those mechanisms trigger based on its configuration.
+
+---
+
 ## Reference Project Research Methodology
 
 When studying reference projects (e.g., BrowserNERD, MCP, A2A):
