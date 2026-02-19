@@ -67,3 +67,32 @@ Projects studied for architecture, patterns, and lessons applicable to MangleCP 
 - `component_reuse_candidate` is a proactive recommendation rule: it finds components that SHOULD exist on a page but don't, anticipating MangleCP's `next.suggested_intents`
 - `map_feature_surface` is a hand-coded composite tool that does what MangleCP automates: one call replacing ~10 atomic searches, validating the macro-tool paradigm
 - Rule status self-documentation (WORKING / PARTIALLY ALIVE / DEAD) shows the need for MangleCP servers to report fact completeness and rule coverage
+
+---
+
+## 4. codeNERD
+
+| | |
+|---|---|
+| **Source** | `C:\CodeProjects\codeNERD` |
+| **Language** | Go |
+| **Stack** | Mangle (logic engine) · MCP client (mcp-go) · SQLite + sqlite-vec · Go cross-compiler (Ouroboros) |
+| **Case Studies** | [Part 1: Kernel Architecture](CodeNERD_CaseStudy_Part1_Kernel.md) · [Part 2: JIT, MCP, Autopoiesis](CodeNERD_CaseStudy_Part2_JIT_MCP.md) |
+
+**What it is:** A ~220K LOC Go CLI coding agent with the deepest Mangle integration of any system studied. Unlike the other reference projects (which are MCP servers), codeNERD is an **MCP client** that connects to external MCP servers while using Mangle as its internal reasoning kernel. 907 Go files, 274 `.mg` files, 35 static tools + Ouroboros-generated dynamic tools. The Mangle kernel governs every action: file writes, bash commands, MCP tool calls, and subagent spawns are all proposed as Mangle facts, evaluated against constitutional safety rules, gated by permission predicates, and routed through a virtual predicate dispatch system.
+
+**Why it matters for MangleCP:**
+
+- The "Hollow Kernel" pattern — Go code as evaluation harness, all reasoning in `.mg` files — is the strongest validation of MangleCP's server architecture model
+- Fresh-store evaluation per cycle ensures deterministic, stateless reasoning — the correct model for MangleCP's per-intent evaluation
+- Stratified trust ordering (schema > policy > learned) provides a formal security hierarchy that MangleCP should adopt for rule source trust levels
+- Three-tier fact categorization (persistent/ephemeral/derived) maps directly to MangleCP's EDB/session-scoped/IDB distinction
+- The JIT Prompt Compiler's 6-phase selection pipeline (skeleton → exclusion → flesh → conflict → dependency → final) IS MangleCP's intent evaluation model
+- Hybrid logic+vector scoring (70% Mangle rules + 30% embedding similarity) in `policy_mcp.mg` demonstrates combined Datalog+ML tool selection
+- The Ouroboros autopoiesis loop proves Mangle-governed transactional state machines can manage runtime capability synthesis with COW snapshot safety
+- Dual-layer constitutional safety (unforgeable Go checks + configurable Mangle policy) is the reference model for MangleCP's security architecture
+- External predicates (10 FFI bridges to knowledge graph, embeddings, traces) show how MangleCP servers can connect Mangle evaluation to external data sources
+- Transaction API (atomic retract+assert with single rebuild) defines the state mutation model for MangleCP's `state_delta` responses
+- Proof tree tracer enables explainability in MangleCP's `proof_hints` response field
+- Structured JSON → Mangle compilation (`synth/compile.go`) is a candidate wire-format encoder — typed JSON instead of raw Mangle strings
+- Zero use of DatalogMTL/TemporalStore despite massive temporal semantics — strongest evidence that MangleCP should make temporal features optional rather than mandatory
