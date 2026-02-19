@@ -201,6 +201,7 @@ Macro-tools are NOT pre-defined tool registrations. They are dynamically assembl
 Servers MAY synthesize macro-tools using any of these patterns:
 
 **Single-capability wrapper:** One atomic capability exposed with a simplified schema.
+
 ```mangle
 macro_tool("observe_console", "full") :-
     intent_type(_, "diagnose_error"),
@@ -208,6 +209,7 @@ macro_tool("observe_console", "full") :-
 ```
 
 **Multi-capability chain:** Multiple atomic capabilities bundled into a sequential execution plan.
+
 ```mangle
 macro_tool("diagnose_causal_chain", "full") :-
     intent_type(_, "diagnose_error"),
@@ -217,6 +219,7 @@ macro_tool("diagnose_causal_chain", "full") :-
 ```
 
 **Conditional composition:** The chain varies based on available facts.
+
 ```mangle
 macro_tool("full_stack_diagnosis", "full") :-
     intent_type(_, "diagnose_error"),
@@ -278,6 +281,7 @@ Skills are the protocol's mechanism for conditional instruction delivery. They f
 - The relationship between skills and rules SHOULD be bidirectional: each skill corresponds to one or more Mangle predicates that gate its injection.
 
 Conceptual Mangle pattern:
+
 ```mangle
 # Skill injection rule
 needs_skill(Intent, "react-best-practices") :-
@@ -330,19 +334,22 @@ Servers SHOULD ensure that context injection includes:
 3. **Context resources** identified by `needs_file`-style rules with relevance explanations
 
 Servers SHOULD NOT include:
+
 - Generic instructions that don't change per-intent
 - Skills that are always needed (embed those in the server's base behavior instead)
 - Context resources with no clear relevance to the macro-tool
 
 ### 5.3 Token Budget Awareness
 
-Context injection content contributes to token usage. Servers SHOULD be aware of token costs:
+Context injection content contributes significantly to token usage. If the client provides a `max_tokens_budget` constraint (Spec 05), the server MUST attempt to fit the context injection within the budget.
 
-- Instructions: keep concise (< 200 tokens)
-- Skills: use referenced mode for large skills
-- Context resources: include relevance descriptions so clients can prioritize reading order
+Servers SHOULD apply the following demotion strategies to fit the token budget:
 
-The server does not enforce token limits on context injection -- that is a client concern. But servers SHOULD provide enough information (priority scores, relevance descriptions) for clients to make intelligent trimming decisions.
+1. **Instructions**: Keep concise (< 200 tokens) regardless of budget.
+2. **Skills**: Downgrade skills from `inline: true` to `inline: false` (Referenced) to save tokens.
+3. **Context resources**: Recompute the selection priority and omit or truncate low-relevance resources if token pressure is high.
+
+While the server does attempt to fit the budget, it SHOULD provide enough information (priority scores, relevance descriptions) for clients to make further intelligent trimming decisions if client-side limits are stricter.
 
 ---
 

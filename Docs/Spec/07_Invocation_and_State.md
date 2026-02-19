@@ -155,6 +155,7 @@ This formalizes codeNERD's `KernelTransaction` pattern: atomic retract+assert op
 | `assert` | array of Fact objects | OPTIONAL | Facts to add to the client's working state. |
 
 Assert facts:
+
 - MUST include `category` (Spec 03 Section 6)
 - SHOULD include `source` provenance (Spec 03 Section 5)
 - MAY include temporal annotations `t`
@@ -166,6 +167,7 @@ Assert facts:
 | `retract` | array of Fact objects | OPTIONAL | Fact patterns to remove from the client's working state. |
 
 Retract facts use **pattern matching**:
+
 - A retract fact with all arguments specified removes that exact fact
 - A retract fact with `null` arguments matches any value in that position (wildcard retraction)
 
@@ -244,11 +246,15 @@ The observability section provides human-readable execution summaries and machin
 | `duration_ms` | integer | OPTIONAL | Wall-clock time for this action |
 | `detail` | string | OPTIONAL | Human-readable detail |
 
-### 5.3 Observability Guidelines
+### 5.3 Observability and Context Window Flooding
 
-- Servers SHOULD provide enough observability for clients to understand what happened during execution
-- Servers MUST NOT expose security-sensitive internal details (credentials, internal URLs, raw database queries)
-- Observability events SHOULD correspond to the atomic actions the macro-tool bundled, giving the client visibility into the execution chain without requiring the client to manage each step individually
+Servers MUST design observability output and state deltas to prevent flooding the client's LLM context window:
+
+- **State Delta Cap:** Servers SHOULD limit the number of specific assertions returned in `state_delta`. If an action touches 1,000 files, the server MUST NOT return 1,000 `file_modified` facts; instead, it SHOULD return a single rolled-up fact (e.g., `bulk_modification_completed`).
+- **Event Trace Cap:** The `events` array SHOULD contain structurally significant milestones, not low-level trace spans. Max 20 events is recommended.
+- **Log Summarization:** The `summary` field MUST be a concise distillation (1-3 sentences) of the execution, not a raw dump of tool outputs.
+
+Servers SHOULD provide enough observability for clients to understand what happened during execution, but MUST NOT expose security-sensitive internal details (credentials, internal URLs, raw database queries). Observability events SHOULD correspond to the atomic actions the macro-tool bundled, giving the client visibility into the execution chain without requiring the client to manage each step individually.
 
 ---
 

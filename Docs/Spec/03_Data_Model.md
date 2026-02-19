@@ -41,6 +41,7 @@ A Fact is the fundamental unit of state in MangleCP. All assertions, observation
 ### 2.3 Predicate Naming
 
 Predicate names MUST:
+
 - Start with a lowercase ASCII letter (`a-z`)
 - Contain only lowercase ASCII letters, digits, and underscores
 - Be at most 128 characters long
@@ -67,6 +68,7 @@ As an alternative to positional `args`, facts MAY use `named_args` for improved 
 ```
 
 This is semantically equivalent to the positional form:
+
 ```json
 {
   "pred": "console_event",
@@ -179,6 +181,37 @@ Every intent evaluation occurs relative to an **evaluation time**:
 - A temporal fact is true only during its annotated interval.
 - When a server returns temporal facts in a `state_delta`, those facts carry their validity intervals. Clients feeding these facts back into subsequent intent requests preserve the temporal semantics.
 
+### 4.6 Example: DatalogMTL Temporal Pattern
+
+This pattern demonstrates how client-sent timestamped facts dictate server-side macro-tool selection using DatalogMTL temporal bounds:
+
+**1. Client sends a timestamped fact:**
+
+```json
+{
+  "pred": "console_event",
+  "args": ["s1", "error"],
+  "t": {"at": "2026-02-19T14:30:00Z"}
+}
+```
+
+**2. Server injects into TemporalStore:**
+The fact is stored natively with strict temporal bounds:
+
+```mangle
+console_event("s1", "error") @["2026-02-19T14:30:00Z", "2026-02-19T14:30:00Z"].
+```
+
+**3. Server rule evaluates relative to `eval_time` (`now`):**
+
+```mangle
+# "If there was a console error in the last 5 minutes, expose the diagnose tool"
+macro_tool("diagnose_error", "full") :-
+    <-[5m] console_event(_, "error").
+```
+
+If the client's `eval_time` is `14:34:00Z` (within 5 minutes), the `diagnose_error` tool is synthesized. If `eval_time` is `14:36:00Z`, it is excluded. This provides robust execution gating without custom Go logic.
+
 ---
 
 ## 5. Fact Provenance
@@ -272,6 +305,7 @@ For contexts where facts carry complex structure (e.g., `facts_profile` schema d
 ```
 
 This compiles to:
+
 ```mangle
 safe_action("read", Target, _) :- file_exists(Target).
 ```

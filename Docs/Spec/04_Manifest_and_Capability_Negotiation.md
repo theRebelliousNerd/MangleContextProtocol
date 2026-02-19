@@ -55,7 +55,11 @@ The `id` MUST be null for manifests (server-initiated, no correlation).
   "domain": {
     "id": "<string>",
     "description": "<string>",
-    "categories": ["<string>", ...]
+    "categories": ["<string>", ...],
+    "affinities": {
+      "coding": 80,
+      "testing": 60
+    }
   },
   "endpoints": {
     "intent_eval": "<URI>",
@@ -133,6 +137,7 @@ The `id` MUST be null for manifests (server-initiated, no correlation).
 | `domain.id` | string | REQUIRED | Machine-readable domain identifier (e.g., `"browser_automation"`, `"codebase_analysis"`, `"spec_implementation"`) |
 | `domain.description` | string | REQUIRED | Human-readable description of the server's domain and purpose |
 | `domain.categories` | array of strings | OPTIONAL | Standardized capability categories (see Section 5) |
+| `domain.affinities` | object | OPTIONAL | A map of string keys to integer weights (0-100) representing the server's semantic affinity for specific operational workspaces (e.g., `{"coding": 80, "testing": 60}`). |
 
 #### 3.2.5 Endpoints
 
@@ -312,7 +317,11 @@ Clients MUST accept and process updated manifests received after the initial man
     "domain": {
       "id": "browser_automation",
       "description": "Token-efficient browser automation with Mangle-powered reasoning over DOM, network, console, and React state.",
-      "categories": ["browser_automation", "testing"]
+      "categories": ["browser_automation", "testing"],
+      "affinities": {
+        "browser_automation": 100,
+        "testing": 70
+      }
     },
     "endpoints": {
       "intent_eval": "/manglecp/evaluate",

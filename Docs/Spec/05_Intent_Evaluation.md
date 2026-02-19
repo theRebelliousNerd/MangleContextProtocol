@@ -30,7 +30,8 @@ This is the "Middle Doll" of the Matryoshka architecture: the client declares wh
     "max_facts_created": "<integer | null>",
     "max_intervals_per_atom": "<integer | null>",
     "max_compute_ms": "<integer | null>",
-    "max_tools_returned": "<integer | null>"
+    "max_tools_returned": "<integer | null>",
+    "max_tokens_budget": "<integer | null>"
   },
   "options": {
     "include_proof_hints": "<boolean>",
@@ -83,6 +84,7 @@ Client-supplied resource budgets that the server MUST NOT exceed:
 | `max_intervals_per_atom` | integer | Server's `limits.max_intervals_per_atom` | Maximum temporal intervals per atom |
 | `max_compute_ms` | integer | Server's `limits.max_compute_ms` | Maximum evaluation time |
 | `max_tools_returned` | integer | No limit | Maximum number of macro-tools in the response |
+| `max_tokens_budget` | integer | No limit | Maximum estimated token cost for the returned macro-tools |
 
 If a client-supplied constraint is more restrictive than the server's limit, the server MUST use the client's value. If less restrictive, the server MUST use its own limit.
 
@@ -140,13 +142,15 @@ Given identical inputs (intent, facts, eval_time, constraints) and identical ser
 
 ### 3.3 Evaluation Constraints Enforcement
 
-During evaluation, the server MUST monitor resource usage:
+During evaluation, the server MUST monitor resource usage to prevent denial-of-service or infinite loops (especially runaway temporal recursions, such as a rule that infinitely derives facts at `T+1`):
 
 | Constraint | Enforcement | Error Code |
 |------------|-------------|------------|
 | `max_facts_created` | Stop derivation when limit reached | `"derivation_limit_exceeded"` |
 | `max_intervals_per_atom` | Coalesce or reject when limit reached | `"interval_limit_exceeded"` |
 | `max_compute_ms` | Abort evaluation on timeout | `"evaluation_timeout"` |
+
+**Runaway Temporal Recursions:** Due to DatalogMTL's expressive power, poorly written temporal rules can generate infinite sequences (e.g., `A@[T+1] :- A@[T]`). The `max_intervals_per_atom` constraint MUST be enforced by the server's `TemporalStore` to detect and halt such escalations before memory exhaustion.
 
 When a constraint is hit, the server MUST return an error response (Spec 09). The server SHOULD NOT return partial results from an incomplete evaluation.
 
@@ -248,7 +252,9 @@ For `"adaptive"` mode, servers SHOULD use score thresholds derived from their re
 - Score >= 20 and < 40: `"minimal"` disclosure
 - Score < 20: excluded from response
 
-These thresholds are RECOMMENDED defaults. Servers MAY adjust them.
+If `max_tokens_budget` is provided in the constraints, servers MUST perform **Token Budget Fitting**: sorting tools by relevance score and progressively demoting the lowest-scoring tools (e.g., from `"full"` to `"condensed"`, or `"condensed"` to `"minimal"`) until the estimated total token cost of all tools fits within the budget.
+
+These thresholds and fitting logic are RECOMMENDED defaults. Servers MAY adjust them based on implementation specifics.
 
 ### 5.3 Disclosure Upgrade
 
