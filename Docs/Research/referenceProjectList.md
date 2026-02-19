@@ -96,3 +96,20 @@ Projects studied for architecture, patterns, and lessons applicable to MangleCP 
 - Proof tree tracer enables explainability in MangleCP's `proof_hints` response field
 - Structured JSON → Mangle compilation (`synth/compile.go`) is a candidate wire-format encoder — typed JSON instead of raw Mangle strings
 - Zero use of DatalogMTL/TemporalStore despite massive temporal semantics — strongest evidence that MangleCP should make temporal features optional rather than mandatory
+
+---
+
+## 5. Mangle Core & Services (TauCeti)
+
+| | |
+|---|---|
+| **Public Repos** | [codeberg.org/TauCeti/mangle-go](https://codeberg.org/TauCeti/mangle-go), [codeberg.org/TauCeti/mangle-service](https://codeberg.org/TauCeti/mangle-service), [codeberg.org/TauCeti/mangle-rs](https://codeberg.org/TauCeti/mangle-rs) |
+| **Language** | Go, Rust |
+| **Stack** | Mangle (logic engine) · gRPC · HTTP |
+
+**What it is:** The official ongoing forks/continuations of the Mangle deductive database by its creator, including reference implementations in Go and Rust, as well as a standalone gRPC service (`mangle-service`) for remote deductive evaluation.
+
+**Why it matters for MangleCP:**
+
+- `mangle-service` demonstrates the baseline baseline needs for a remote Mangle evaluation server (gRPC). MangleCP builds *upon* this concept by adding intent negotiation, progressive disclosure, and MCP-like macro-tool capabilities.
+- Having active upstream implementations ensures MangleCP can rely on an advancing feature set (like DatalogMTL).
